@@ -1,0 +1,4 @@
+node_modules/
+renders/
+media/*.wav
+media/raw.mp4
