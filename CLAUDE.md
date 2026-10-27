@@ -5,7 +5,7 @@ Cada proyecto nuevo va en su propia carpeta dentro de `proyectos/`.
 
 ## Al empezar una sesión
 
-Si `hyperframes --version` falla o faltan `node_modules`, corré `bash scripts/setup.sh` antes de nada.
+Un hook SessionStart corre `scripts/setup.sh` automáticamente. Si aun así `hyperframes --version` falla o faltan `node_modules`, corrélo a mano antes de nada.
 
 ## Restricciones de red en la nube
 

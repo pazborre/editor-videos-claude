@@ -29,4 +29,4 @@ cd proyectos/remotion-demo && npx remotion render HelloWorld out/hello.mp4
 
 ## Sesión nueva en la nube
 
-Corré `bash scripts/setup.sh` (tarda ~1–3 min la primera vez). Para que sea automático, pegá su contenido en el Setup script del entorno.
+Se configura sola: un hook de inicio (`.claude/settings.json`) corre `scripts/setup.sh` al abrir cada sesión (~1–3 min la primera vez).

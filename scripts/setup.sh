@@ -6,6 +6,12 @@ set -euo pipefail
 HF_VERSION=0.8.209
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
+# Solo en la nube: en una compu local no toca paquetes del sistema (forzalo con --force).
+if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ] && [ "${1:-}" != "--force" ]; then
+  echo "setup.sh: no es una sesión en la nube, no hago nada."
+  exit 0
+fi
+
 if ! dpkg -s fonts-noto-color-emoji >/dev/null 2>&1 || ! command -v convert >/dev/null || ! command -v sox >/dev/null; then
   echo "→ Paquetes del sistema (FFmpeg, fuentes, ImageMagick, SoX, libs de Chrome)"
   apt-get update -qq
