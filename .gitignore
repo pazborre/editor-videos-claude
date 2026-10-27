@@ -1,0 +1,10 @@
+node_modules/
+renders/
+out/
+dist/
+.hyperframes/
+*.mp4
+*.mov
+*.webm
+.DS_Store
+.env
