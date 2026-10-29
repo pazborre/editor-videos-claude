@@ -21,7 +21,7 @@ if ! dpkg -s fonts-noto-color-emoji >/dev/null 2>&1 || ! command -v convert >/de
     libpangocairo-1.0-0 libcups2 libxcomposite1 libxdamage1 libxrandr2 >/dev/null
 fi
 
-if [ "$(hyperframes --version 2>/dev/null)" != "$HF_VERSION" ]; then
+if ! command -v hyperframes >/dev/null; then  # se autoactualiza; no fijar versión acá
   echo "→ HyperFrames $HF_VERSION"
   npm install -g "hyperframes@$HF_VERSION" --silent
 fi
@@ -32,6 +32,33 @@ hyperframes browser ensure >/dev/null
 if ! python3 -c "import kokoro_onnx, soundfile" 2>/dev/null; then
   echo "→ Kokoro (TTS local)"
   pip install -q kokoro-onnx soundfile 2>/dev/null
+fi
+
+if ! python3 -c "import faster_whisper" 2>/dev/null; then
+  echo "→ faster-whisper (transcripción)"
+  pip install -q faster-whisper 2>/dev/null
+fi
+
+# Whisper small (CTranslate2 int8). Hugging Face está bloqueado: se baja de npm en 4 partes
+# con `npm pack` (sin ejecutar scripts) y se verifica el checksum.
+WHISPER_DIR="$HOME/.cache/whisper-small-ct2"
+WHISPER_SHA=ca732cb1379efc49417d028465f543d83a39de2c61f3027678de103dc404ce73
+if [ "$(sha256sum "$WHISPER_DIR/model.bin" 2>/dev/null | cut -d' ' -f1)" != "$WHISPER_SHA" ]; then
+  echo "→ Modelo Whisper small (~250 MB)"
+  DL="$(mktemp -d)"
+  (cd "$DL" && for i in 0 1 2 3; do
+    npm pack -q "@skillninja/shortmovie-telop-model-p$i@1.0.0" >/dev/null 2>&1
+    mkdir "p$i" && tar xzf "skillninja-shortmovie-telop-model-p$i-1.0.0.tgz" -C "p$i"
+  done)
+  mkdir -p "$WHISPER_DIR"
+  cp "$DL"/p0/package/{config.json,preprocessor_config.json,tokenizer.json,vocabulary.json} "$WHISPER_DIR/"
+  cat "$DL"/p0/package/model.bin.part0 "$DL"/p1/package/model.bin.part1 \
+      "$DL"/p2/package/model.bin.part2 "$DL"/p3/package/model.bin.part3 > "$WHISPER_DIR/model.bin"
+  rm -rf "$DL"
+  if [ "$(sha256sum "$WHISPER_DIR/model.bin" | cut -d' ' -f1)" != "$WHISPER_SHA" ]; then
+    echo "✗ Checksum del modelo Whisper no coincide; lo borro." >&2
+    rm -f "$WHISPER_DIR/model.bin"
+  fi
 fi
 
 # Dependencias de cada proyecto (solo si el repo ya está clonado).
